@@ -8,6 +8,18 @@ namespace ConsoleSheetsQuickstart
 {
     class Program
     {        
+
+        static bool DisplayErrors(dynamic executionResult)
+        {
+            int resultType = (int)executionResult.Result;
+            bool hasErrors = resultType > 0;
+            if (hasErrors)
+            {
+                Console.WriteLine("{0}) - {1}", resultType > 1 ? "Error" : "Warning", string.Join("\n", executionResult.Messages));
+            }
+            return hasErrors;
+        }
+
         static void Main(string[] args)
         {
             Assembly currentAssembly = Assembly.GetExecutingAssembly();
@@ -29,6 +41,9 @@ namespace ConsoleSheetsQuickstart
             //  Creating a CellAddress instance
             Type cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress");
             Type cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
+            Type executionResultWitDataType = testAssembly.GetType("GSpreadSheet.ExecutionResultWithData`1", true);
+            Type[] typeArgs = { typeof(List<object>) };
+            Type makeme = executionResultWitDataType.MakeGenericType(typeArgs);
             List<object> listCellAddress = new List<object>();
 
             object instanceCellAddress = Activator.CreateInstance(cellAddressType);
@@ -36,20 +51,23 @@ namespace ConsoleSheetsQuickstart
             propertyAddress.SetValue(instanceCellAddress, "A2");
             listCellAddress.Add(instanceCellAddress);
 
+            dynamic executionResult = null;
             //  Calling a ReadCellValues function
             //MethodInfo methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
             //parametersArray = new object[] { session, listCellAddress };
-            //IList<object> values = (IList<object>)methodReadCellValues.Invoke(gsInstance, parametersArray);
-            //int i = 1;
-            //foreach (var row in values)
+            //executionResult = methodReadCellValues.Invoke(gsInstance, parametersArray);
+            //bool hasErrors = DisplayErrors(executionResult);
+            //if (!hasErrors)
             //{
-            //    propertyAddress = cellAddressValueType.GetField("Address");
-            //    var address = propertyAddress.GetValue(row);
-            //    propertyAddress = cellAddressValueType.GetField("SheetName");
-            //    var sheetName = propertyAddress.GetValue(row);
-            //    propertyAddress = cellAddressValueType.GetField("Value");
-            //    var val = propertyAddress.GetValue(row);
-            //    Console.WriteLine("{0}) - {1}, {2}, {3}", i++, sheetName, address, val);
+            //    IList<object> values = (IList<object>)executionResult.Data;
+            //    int i = 1;
+            //    foreach (dynamic row in values)
+            //    {
+            //        var address = row.Address;
+            //        var sheetName = row.SheetName;
+            //        var val = row.Value;
+            //        Console.WriteLine("{0}) - {1}, {2}, {3}", i++, sheetName, address, val);
+            //    }
             //}
 
             //  Creating a CellAddressWithValue instance
@@ -77,7 +95,8 @@ namespace ConsoleSheetsQuickstart
             //  Calling a WriteCellValues function
             //MethodInfo methodWriteCellValues = googleSheetsType.GetMethod("WriteCellValues");
             //parametersArray = new object[] { session, listCellAddress };
-            //methodWriteCellValues.Invoke(gsInstance, parametersArray);
+            //executionResult = methodWriteCellValues.Invoke(gsInstance, parametersArray);
+            //DisplayErrors(executionResult);
 
             Console.ReadLine();
         }
