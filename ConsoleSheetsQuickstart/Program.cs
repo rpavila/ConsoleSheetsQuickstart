@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Reflection;
 
 namespace ConsoleSheetsQuickstart
@@ -11,8 +10,8 @@ namespace ConsoleSheetsQuickstart
 
         static bool DisplayErrors(dynamic executionResult)
         {
-            int resultType = (int)executionResult.Result;
-            bool hasErrors = resultType > 0;
+            var resultType = (int)executionResult.Result;
+            var hasErrors = resultType > 0;
             if (hasErrors)
             {
                 Console.WriteLine("{0}) - {1}", resultType > 1 ? "Error" : "Warning", string.Join("\n", executionResult.Messages));
@@ -22,83 +21,91 @@ namespace ConsoleSheetsQuickstart
 
         static void Main(string[] args)
         {
-            Assembly currentAssembly = Assembly.GetExecutingAssembly();
-            string absolutePath = Path.GetDirectoryName(currentAssembly.Location);
-            Assembly testAssembly = Assembly.LoadFile(absolutePath + "/GSpreadSheet.dll");
-            Type googleSheetsType = testAssembly.GetType("GSpreadSheet.GoogleSheets");
+            var currentAssembly = Assembly.GetExecutingAssembly();
+            var absolutePath = Path.GetDirectoryName(currentAssembly.Location);
+            var testAssembly = Assembly.LoadFile(absolutePath + "/GSpreadSheet.dll");
+            var googleSheetsType = testAssembly.GetType("GSpreadSheet.GoogleSheets");
 
-            object[] constructorParams = new object[] { "credentials.json" };
-            object gsInstance = Activator.CreateInstance(googleSheetsType, constructorParams);
+            var constructorParams = new object[] { "credentials.json" };
+            var gsInstance = Activator.CreateInstance(googleSheetsType, constructorParams);
 
             //  Spreadsheets DocID
-            String spreadsheetId = "1mfFHzoYsz9Rfypme3bRZGHYqXLVFJNLVz4hNiSS9tfk";
+            var spreadsheetId = "1mfFHzoYsz9Rfypme3bRZGHYqXLVFJNLVz4hNiSS9tfk";
             
             //  Creating a Session
-            MethodInfo methodOpenSession = googleSheetsType.GetMethod("OpenSession");
-            object[] parametersArray = new object[] { spreadsheetId };
-            object session = methodOpenSession.Invoke(gsInstance, parametersArray);
+            var methodOpenSession = googleSheetsType.GetMethod("OpenSession");
+            var methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
+            var methodWriteCellValues = googleSheetsType.GetMethod("WriteCellValues");
+
+            var parametersArray = new object[] { spreadsheetId };
+            var session = methodOpenSession.Invoke(gsInstance, parametersArray);
 
             //  Creating a CellAddress instance
-            Type cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress");
-            Type cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
-            Type executionResultWitDataType = testAssembly.GetType("GSpreadSheet.ExecutionResultWithData`1", true);
-            Type[] typeArgs = { typeof(List<object>) };
-            Type makeme = executionResultWitDataType.MakeGenericType(typeArgs);
-            List<object> listCellAddress = new List<object>();
+            var cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress");
+            var cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
 
-            object instanceCellAddress = Activator.CreateInstance(cellAddressType);
-            FieldInfo propertyAddress = cellAddressType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddress, "A2");
+//            Type executionResultWitDataType = testAssembly.GetType("GSpreadSheet.ExecutionResultWithData`1", true);
+
+//            FieldInfo propertyAddress = cellAddressType.GetField("Address");
+
+
+            var listType = typeof(List<>);
+            var cellAddressesListType = listType.MakeGenericType(cellAddressType);
+            var cellAddressWithValueListType = listType.MakeGenericType(cellAddressValueType);
+
+//            Type[] typeArgs = { typeof(List<object>) };
+//            Type makeme = executionResultWitDataType.MakeGenericType(typeArgs);
+            dynamic listCellAddress = Activator.CreateInstance(cellAddressesListType);
+
+            dynamic instanceCellAddress = Activator.CreateInstance(cellAddressType, "A2");
+//            propertyAddress.SetValue(instanceCellAddress, "A2");
             listCellAddress.Add(instanceCellAddress);
 
-            dynamic executionResult = null;
             //  Calling a ReadCellValues function
-            //MethodInfo methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
-            //parametersArray = new object[] { session, listCellAddress };
-            //executionResult = methodReadCellValues.Invoke(gsInstance, parametersArray);
-            //bool hasErrors = DisplayErrors(executionResult);
-            //if (!hasErrors)
-            //{
-            //    IList<object> values = (IList<object>)executionResult.Data;
-            //    int i = 1;
-            //    foreach (dynamic row in values)
-            //    {
-            //        var address = row.Address;
-            //        var sheetName = row.SheetName;
-            //        var val = row.Value;
-            //        Console.WriteLine("{0}) - {1}, {2}, {3}", i++, sheetName, address, val);
-            //    }
-            //}
+//            parametersArray = new object[] { session, listCellAddress };
+            dynamic executionResult = methodReadCellValues.Invoke(gsInstance, new [] { session, listCellAddress });
+            bool hasErrors = DisplayErrors(executionResult);
+            if (!hasErrors)
+            {
+//                IList<object> values = (IList<object>);
+                var i = 1;
+                foreach (var row in executionResult.Data)
+                {
+                    var address = row.Address;
+                    var sheetName = row.SheetName;
+                    var val = row.Value;
+                    Console.WriteLine("{0}) - {1}, {2}, {3}", i++, sheetName, address, val);
+                }
+            }
 
             //  Creating a CellAddressWithValue instance
-            listCellAddress = new List<object>();
-            cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
-            object instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H5");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Andrew");
+            listCellAddress = Activator.CreateInstance(cellAddressWithValueListType);
+
+            dynamic instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "H5", "Andrew");
+//            propertyAddress = cellAddressValueType.GetField("Address");
+//            propertyAddress.SetValue(instanceCellAddressValue, "H5");
+//            propertyAddress = cellAddressValueType.GetField("Value");
+//            propertyAddress.SetValue(instanceCellAddressValue, "Andrew");
             listCellAddress.Add(instanceCellAddressValue);
-            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H7");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Constantine");
+            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "H7", "Constantine");
+//            propertyAddress = cellAddressValueType.GetField("Address");
+//            propertyAddress.SetValue(instanceCellAddressValue, "H7");
+//            propertyAddress = cellAddressValueType.GetField("Value");
+//            propertyAddress.SetValue(instanceCellAddressValue, "Constantine");
             listCellAddress.Add(instanceCellAddressValue);
-            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H9");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Ricardo");
+            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "H9", "Ricardo");
+//            propertyAddress = cellAddressValueType.GetField("Address");
+//            propertyAddress.SetValue(instanceCellAddressValue, "H9");
+//            propertyAddress = cellAddressValueType.GetField("Value");
+//            propertyAddress.SetValue(instanceCellAddressValue, "Ricardo");
             listCellAddress.Add(instanceCellAddressValue);
 
             //  Calling a WriteCellValues function
-            //MethodInfo methodWriteCellValues = googleSheetsType.GetMethod("WriteCellValues");
-            //parametersArray = new object[] { session, listCellAddress };
-            //executionResult = methodWriteCellValues.Invoke(gsInstance, parametersArray);
-            //DisplayErrors(executionResult);
-
-            Console.ReadLine();
+//            parametersArray = new object[] { session, listCellAddress };
+            executionResult = methodWriteCellValues.Invoke(gsInstance, new [] { session, listCellAddress });
+            DisplayErrors(executionResult);
+            Console.WriteLine("SetValues executed with result={0}", executionResult.Result);
+//            Console.ReadLine();
         }
     }
 }
