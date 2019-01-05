@@ -11,8 +11,8 @@ namespace ConsoleSheetsQuickstart
 
         static bool DisplayErrors(dynamic executionResult)
         {
-            int resultType = (int)executionResult.Result;
-            bool hasErrors = resultType > 0;
+            var resultType = (int)executionResult.Result;
+            var hasErrors = resultType > 0;
             if (hasErrors)
             {
                 Console.WriteLine("{0}) - {1}", resultType > 1 ? "Error" : "Warning", string.Join("\n", executionResult.Messages));
@@ -26,21 +26,24 @@ namespace ConsoleSheetsQuickstart
 
         static void Main(string[] args)
         {
-            Assembly currentAssembly = Assembly.GetExecutingAssembly();
-            string absolutePath = Path.GetDirectoryName(currentAssembly.Location);
-            Assembly testAssembly = Assembly.LoadFile(absolutePath + "/GSpreadSheet.dll");
-            Type googleSheetsType = testAssembly.GetType("GSpreadSheet.GoogleSheets");
+            var currentAssembly = Assembly.GetExecutingAssembly();
+            var absolutePath = Path.GetDirectoryName(currentAssembly.Location);
+            var testAssembly = Assembly.LoadFile(absolutePath + "/GSpreadSheet.dll");
+            var googleSheetsType = testAssembly.GetType("GSpreadSheet.GoogleSheets");
 
-            object[] constructorParams = new object[] { "credentials.json" };
-            object gsInstance = Activator.CreateInstance(googleSheetsType, constructorParams);
+            var constructorParams = new object[] { "credentials.json" };
+            var gsInstance = Activator.CreateInstance(googleSheetsType, constructorParams);
 
             //  Spreadsheets DocID
-            String spreadsheetId = "1mfFHzoYsz9Rfypme3bRZGHYqXLVFJNLVz4hNiSS9tfk";
-
+            var spreadsheetId = "1mfFHzoYsz9Rfypme3bRZGHYqXLVFJNLVz4hNiSS9tfk";
+            
             //  Creating a Session
-            MethodInfo methodOpenSession = googleSheetsType.GetMethod("OpenSession");
-            object[] parametersArray = new object[] { spreadsheetId };
-            object session = methodOpenSession.Invoke(gsInstance, parametersArray);
+            var methodOpenSession = googleSheetsType.GetMethod("OpenSession");
+            var methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
+            var methodWriteCellValues = googleSheetsType.GetMethod("WriteCellValues");
+
+            var parametersArray = new object[] { spreadsheetId };
+            var session = methodOpenSession.Invoke(gsInstance, parametersArray);
 
             //  Creating a CellAddress instance
             Type cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress", true);
@@ -55,16 +58,14 @@ namespace ConsoleSheetsQuickstart
             MethodInfo methodAdd = listGenericType.GetMethod("Add");
             methodAdd.Invoke(listGenericInstance, new object[] { instanceCellAddress });
 
-            dynamic executionResult = null;
             //  Calling a ReadCellValues function
             //MethodInfo methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
             //executionResult = methodReadCellValues.Invoke(gsInstance, new object[] { session, listGenericInstance });
             //bool hasErrors = DisplayErrors(executionResult);
             //if (!hasErrors)
             //{
-            //    dynamic values = executionResult.Data;
             //    int i = 1;
-            //    foreach (dynamic row in values)
+            //    foreach (dynamic row in executionResult.Data)
             //    {
             //        var address = row.Address;
             //        var sheetName = row.SheetName;
