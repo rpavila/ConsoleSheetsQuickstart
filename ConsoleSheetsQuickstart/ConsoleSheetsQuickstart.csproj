@@ -6,18 +6,53 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.36.1.1439" />
+    <Reference Include="Google.Apis">
+      <HintPath>lib\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth">
+      <HintPath>lib\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core">
+      <HintPath>lib\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Sheets.v4">
+      <HintPath>lib\Google.Apis.Sheets.v4.dll</HintPath>
+    </Reference>
+    <Reference Include="GSpreadSheet">
+      <HintPath>lib\GSpreadSheet.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Permissions">
+      <HintPath>lib\System.Security.Permissions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="credentials.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="GSpreadSheet.dll">
+    <None Update="lib\Google.Apis.Auth.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Google.Apis.Auth.PlatformServices.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="key.p12">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="lib\Google.Apis.Core.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Google.Apis.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Google.Apis.Sheets.v4.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\GSpreadSheet.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Newtonsoft.Json.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\System.Security.Permissions.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="token.json\Google.Apis.Auth.OAuth2.Responses.TokenResponse-user">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

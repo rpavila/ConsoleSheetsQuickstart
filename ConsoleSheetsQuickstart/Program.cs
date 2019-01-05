@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Reflection;
+using GSpreadSheet;
 
 namespace ConsoleSheetsQuickstart
 {
@@ -16,6 +16,10 @@ namespace ConsoleSheetsQuickstart
             if (hasErrors)
             {
                 Console.WriteLine("{0}) - {1}", resultType > 1 ? "Error" : "Warning", string.Join("\n", executionResult.Messages));
+            }
+            else
+            {
+                Console.WriteLine("{0}", string.Join("\n", executionResult.Messages));
             }
             return hasErrors;
         }
@@ -32,34 +36,33 @@ namespace ConsoleSheetsQuickstart
 
             //  Spreadsheets DocID
             String spreadsheetId = "1mfFHzoYsz9Rfypme3bRZGHYqXLVFJNLVz4hNiSS9tfk";
-            
+
             //  Creating a Session
             MethodInfo methodOpenSession = googleSheetsType.GetMethod("OpenSession");
             object[] parametersArray = new object[] { spreadsheetId };
             object session = methodOpenSession.Invoke(gsInstance, parametersArray);
 
             //  Creating a CellAddress instance
-            Type cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress");
-            Type cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
+            Type cellAddressType = testAssembly.GetType("GSpreadSheet.CellAddress", true);
+            Type cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue", true);
             Type executionResultWitDataType = testAssembly.GetType("GSpreadSheet.ExecutionResultWithData`1", true);
-            Type[] typeArgs = { typeof(List<object>) };
-            Type makeme = executionResultWitDataType.MakeGenericType(typeArgs);
-            List<object> listCellAddress = new List<object>();
 
-            object instanceCellAddress = Activator.CreateInstance(cellAddressType);
-            FieldInfo propertyAddress = cellAddressType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddress, "A2");
-            listCellAddress.Add(instanceCellAddress);
+            Type listType = typeof(List<>);
+            Type[] typeArgs = { cellAddressType };
+            Type listGenericType = listType.MakeGenericType(typeArgs);
+            object listGenericInstance = Activator.CreateInstance(listGenericType);
+            object instanceCellAddress = Activator.CreateInstance(cellAddressType, "", "A8");
+            MethodInfo methodAdd = listGenericType.GetMethod("Add");
+            methodAdd.Invoke(listGenericInstance, new object[] { instanceCellAddress });
 
             dynamic executionResult = null;
             //  Calling a ReadCellValues function
             //MethodInfo methodReadCellValues = googleSheetsType.GetMethod("ReadCellValues");
-            //parametersArray = new object[] { session, listCellAddress };
-            //executionResult = methodReadCellValues.Invoke(gsInstance, parametersArray);
+            //executionResult = methodReadCellValues.Invoke(gsInstance, new object[] { session, listGenericInstance });
             //bool hasErrors = DisplayErrors(executionResult);
             //if (!hasErrors)
             //{
-            //    IList<object> values = (IList<object>)executionResult.Data;
+            //    dynamic values = executionResult.Data;
             //    int i = 1;
             //    foreach (dynamic row in values)
             //    {
@@ -71,31 +74,20 @@ namespace ConsoleSheetsQuickstart
             //}
 
             //  Creating a CellAddressWithValue instance
-            listCellAddress = new List<object>();
-            cellAddressValueType = testAssembly.GetType("GSpreadSheet.CellAddressWithValue");
-            object instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H5");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Andrew");
-            listCellAddress.Add(instanceCellAddressValue);
-            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H7");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Constantine");
-            listCellAddress.Add(instanceCellAddressValue);
-            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType);
-            propertyAddress = cellAddressValueType.GetField("Address");
-            propertyAddress.SetValue(instanceCellAddressValue, "H9");
-            propertyAddress = cellAddressValueType.GetField("Value");
-            propertyAddress.SetValue(instanceCellAddressValue, "Ricardo");
-            listCellAddress.Add(instanceCellAddressValue);
+            typeArgs[0] = cellAddressValueType;
+            listGenericType = listType.MakeGenericType(typeArgs);
+            methodAdd = listGenericType.GetMethod("Add");
+            listGenericInstance = Activator.CreateInstance(listGenericType);
+            object instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "", "H5", "Andrew");
+            methodAdd.Invoke(listGenericInstance, new object[] { instanceCellAddressValue });
+            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "", "H7", "Constatine");
+            methodAdd.Invoke(listGenericInstance, new object[] { instanceCellAddressValue });
+            instanceCellAddressValue = Activator.CreateInstance(cellAddressValueType, "", "H9", "Ricardo");
+            methodAdd.Invoke(listGenericInstance, new object[] { instanceCellAddressValue });
 
             //  Calling a WriteCellValues function
             //MethodInfo methodWriteCellValues = googleSheetsType.GetMethod("WriteCellValues");
-            //parametersArray = new object[] { session, listCellAddress };
-            //executionResult = methodWriteCellValues.Invoke(gsInstance, parametersArray);
+            //executionResult = methodWriteCellValues.Invoke(gsInstance, new object[] { session, listGenericInstance });
             //DisplayErrors(executionResult);
 
             Console.ReadLine();
